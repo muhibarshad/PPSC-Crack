@@ -1,84 +1,207 @@
 /**
  * Admin Dashboard — /admin
+ * =========================
+ * Full dashboard home screen with stat cards, papers timeline,
+ * prediction health panel, and recent activity feed.
  * Protected route: requires role='admin'.
  */
 
 'use client';
 
+import { useState, useEffect, useCallback } from 'react';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import AdminLayout from '@/components/admin/AdminLayout';
-import Link from 'next/link';
+import { useAuthStore } from '@/store/auth-store';
+import {
+  AdminStatCards,
+  PapersTimeline,
+  PredictionHealthPanel,
+  RecentActivityFeed,
+} from '@/components/admin/dashboard';
+import type { AdminDashboardData } from '@/components/admin/dashboard';
 
-function AdminContent() {
-  const cards = [
-    {
-      title: 'Job Types',
-      desc: 'Manage PPSC job categories & topic ratios',
-      href: '/admin/job-types',
-      count: '8',
-      icon: 'M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10',
-    },
-    {
-      title: 'Pattern Analytics',
-      desc: 'Topic trends, repeat patterns & prediction accuracy',
-      href: '/admin/pattern-analytics',
-      count: '5',
-      icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z',
-    },
-    {
-      title: 'Review Queue',
-      desc: 'Questions needing manual correction',
-      href: '/admin/review-queue',
-      count: '—',
-      icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4',
-    },
-    {
-      title: 'Admin Notes',
-      desc: 'Upload & process raw notes into story docs',
-      href: '/admin/notes',
-      count: '—',
-      icon: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z',
-    },
-    {
-      title: 'Papers',
-      desc: 'Past papers & questions database',
-      href: '/admin',
-      count: '—',
-      icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z',
-    },
-    {
-      title: 'Users',
-      desc: 'Student & admin accounts',
-      href: '/admin',
-      count: '—',
-      icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z',
-    },
-  ];
+/* ── API helper ────────────────────────────────── */
+
+const API = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
+
+async function apiFetch<T = unknown>(
+  path: string,
+  token?: string,
+): Promise<T> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${API}${path}`, { headers, credentials: 'include' });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
+  return res.json();
+}
+
+/* ── Skeleton Loaders ──────────────────────────── */
+
+function StatCardSkeleton() {
+  return (
+    <div className="glass p-5 animate-pulse">
+      <div className="flex items-center justify-between mb-4">
+        <div className="w-11 h-11 rounded-xl bg-white/[0.06]" />
+        <div className="w-16 h-8 rounded-lg bg-white/[0.06]" />
+      </div>
+      <div className="w-24 h-3 rounded bg-white/[0.06]" />
+    </div>
+  );
+}
+
+function TimelineSkeleton() {
+  return (
+    <div className="glass p-5 animate-pulse">
+      <div className="w-32 h-4 rounded bg-white/[0.06] mb-4" />
+      <div className="w-full h-[220px] rounded-xl bg-white/[0.03]" />
+    </div>
+  );
+}
+
+function HealthSkeleton() {
+  return (
+    <div className="glass p-5 animate-pulse h-full">
+      <div className="w-36 h-4 rounded bg-white/[0.06] mb-4" />
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="glass-sm p-4 mb-3">
+          <div className="flex items-center justify-between">
+            <div className="w-28 h-4 rounded bg-white/[0.06]" />
+            <div className="w-16 h-5 rounded-full bg-white/[0.06]" />
+          </div>
+          <div className="w-full h-1.5 rounded-full bg-white/[0.04] mt-3" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div className="glass p-5 animate-pulse">
+      <div className="w-28 h-4 rounded bg-white/[0.06] mb-4" />
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center gap-4 px-4 py-3">
+          <div className="w-8 h-8 rounded-lg bg-white/[0.06]" />
+          <div className="flex-1 space-y-2">
+            <div className="w-40 h-3 rounded bg-white/[0.06]" />
+            <div className="w-24 h-2 rounded bg-white/[0.04]" />
+          </div>
+          <div className="w-16 h-5 rounded bg-white/[0.06]" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ── Dashboard Content ─────────────────────────── */
+
+function AdminDashboardContent() {
+  const session = useAuthStore((s) => s.session);
+  const initialised = useAuthStore((s) => s.initialised);
+  const token = session?.access_token;
+
+  const [data, setData] = useState<AdminDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboard = useCallback(async () => {
+    if (!token) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const result = await apiFetch<AdminDashboardData>('/admin/dashboard', token);
+      setData(result);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load dashboard');
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (initialised && token) {
+      fetchDashboard();
+    }
+  }, [initialised, token, fetchDashboard]);
 
   return (
     <AdminLayout>
-      <div className="max-w-5xl">
-        <h1 className="font-display text-3xl font-bold text-white mb-1">Dashboard</h1>
-        <p className="text-[var(--clr-text-secondary)] mb-8">Overview of the PPSC Crack admin panel.</p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {cards.map((c) => (
-            <Link key={c.title} href={c.href} className="group">
-              <div className="glass p-6 hover:border-[var(--clr-glass-border-hover)] transition-all duration-200 group-hover:bg-[var(--clr-glass-bg-hover)]">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--clr-primary-dim)] flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--clr-primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                      <path d={c.icon} />
-                    </svg>
-                  </div>
-                  <span className="text-2xl font-bold text-white">{c.count}</span>
-                </div>
-                <h3 className="text-sm font-bold text-white mb-1">{c.title}</h3>
-                <p className="text-xs text-[var(--clr-text-muted)]">{c.desc}</p>
-              </div>
-            </Link>
-          ))}
+      <div className="max-w-[1400px]">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="font-display text-3xl font-bold text-white mb-1">Dashboard</h1>
+            <p className="text-[var(--clr-text-secondary)] text-sm">
+              Real-time overview of the PPSC Crack intelligence system.
+            </p>
+          </div>
+          <button
+            onClick={fetchDashboard}
+            disabled={loading}
+            className="glass-sm px-4 py-2 text-xs font-semibold text-[var(--clr-text-secondary)] hover:text-white hover:border-[var(--clr-glass-border-hover)] transition-all duration-200 disabled:opacity-50"
+          >
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <svg className="animate-spin w-3.5 h-3.5" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeDasharray="31.4 31.4" strokeLinecap="round" />
+                </svg>
+                Loading…
+              </span>
+            ) : (
+              '↻ Refresh'
+            )}
+          </button>
         </div>
+
+        {/* Error state */}
+        {error && (
+          <div className="glass-sm px-5 py-4 mb-6 border-l-4 border-[var(--clr-danger)]">
+            <p className="text-sm text-[var(--clr-danger)] font-semibold">Failed to load dashboard</p>
+            <p className="text-xs text-[var(--clr-text-muted)] mt-1">{error}</p>
+            <button
+              onClick={fetchDashboard}
+              className="text-xs text-[var(--clr-primary)] hover:underline mt-2"
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {/* 1. Stat Cards */}
+        {loading || !data ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+            {[1, 2, 3, 4].map((i) => <StatCardSkeleton key={i} />)}
+          </div>
+        ) : (
+          <div className="mb-6">
+            <AdminStatCards stats={data.stats} />
+          </div>
+        )}
+
+        {/* 2. Timeline + 3. Prediction Health — side by side */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-5 mb-6">
+          {loading || !data ? (
+            <>
+              <TimelineSkeleton />
+              <HealthSkeleton />
+            </>
+          ) : (
+            <>
+              <PapersTimeline papers={data.timeline} />
+              <PredictionHealthPanel items={data.prediction_health} />
+            </>
+          )}
+        </div>
+
+        {/* 4. Recent Activity Feed */}
+        {loading || !data ? (
+          <ActivitySkeleton />
+        ) : (
+          <RecentActivityFeed items={data.recent_activity} />
+        )}
       </div>
     </AdminLayout>
   );
@@ -87,7 +210,7 @@ function AdminContent() {
 export default function AdminPage() {
   return (
     <ProtectedRoute requiredRole="admin">
-      <AdminContent />
+      <AdminDashboardContent />
     </ProtectedRoute>
   );
 }

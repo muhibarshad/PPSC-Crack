@@ -16,8 +16,9 @@ import { useAuthStore } from '@/store/auth-store';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@/lib/validations/auth';
 
 export default function ForgotPasswordPage() {
-  const { forgotPassword, loading, error: storeError, setError } = useAuthStore();
+  const { forgotPassword, error: storeError, setError } = useAuthStore();
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const {
     register,
@@ -30,11 +31,14 @@ export default function ForgotPasswordPage() {
 
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setError(null);
+    setSubmitting(true);
     try {
       await forgotPassword(data.email);
       setSent(true);
     } catch {
       // Error set in store
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -93,10 +97,10 @@ export default function ForgotPasswordPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={submitting}
             className="btn btn-primary btn-lg w-full animate-pulse-glow disabled:opacity-60 disabled:cursor-not-allowed disabled:animate-none mt-1"
           >
-            {loading ? (
+            {submitting ? (
               <span className="flex items-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

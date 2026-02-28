@@ -14,16 +14,20 @@ interface SocialAuthButtonsProps {
 }
 
 export default function SocialAuthButtons({ showMagicLink = false }: SocialAuthButtonsProps) {
-  const { loginWithGoogle, sendMagicLink, loading } = useAuthStore();
+  const { loginWithGoogle, sendMagicLink } = useAuthStore();
+  const [submitting, setSubmitting] = useState(false);
   const [magicEmail, setMagicEmail] = useState('');
   const [magicSent, setMagicSent] = useState(false);
   const [magicError, setMagicError] = useState('');
 
   const handleGoogle = async () => {
+    setSubmitting(true);
     try {
       await loginWithGoogle();
     } catch {
       // error is stored in the auth store
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -34,11 +38,14 @@ export default function SocialAuthButtons({ showMagicLink = false }: SocialAuthB
       setMagicError('Enter your email address');
       return;
     }
+    setSubmitting(true);
     try {
       await sendMagicLink(magicEmail);
       setMagicSent(true);
     } catch (err: unknown) {
       setMagicError(err instanceof Error ? err.message : 'Failed to send magic link');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -48,7 +55,7 @@ export default function SocialAuthButtons({ showMagicLink = false }: SocialAuthB
       <button
         type="button"
         onClick={handleGoogle}
-        disabled={loading}
+        disabled={submitting}
         className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold
                    bg-white/5 border border-white/10 text-white
                    hover:bg-white/10 hover:border-white/20
@@ -101,7 +108,7 @@ export default function SocialAuthButtons({ showMagicLink = false }: SocialAuthB
               />
               <button
                 type="submit"
-                disabled={loading}
+                disabled={submitting}
                 className="px-4 py-2.5 rounded-xl text-sm font-semibold
                            bg-white/5 border border-white/10 text-white
                            hover:bg-white/10 hover:border-white/20

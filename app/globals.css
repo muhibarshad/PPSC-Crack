@@ -452,6 +452,30 @@ h1, h2, h3, h4, h5, h6 {
 .animate-float      { animation: float 6s ease-in-out infinite; }
 .animate-pulse-glow { animation: pulseGlow 3s ease-in-out infinite; }
 
+/* ── Prediction Studio animations ── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-fade-slide-in { animation: fadeSlideIn 0.4s var(--ease-out) both; }
+.animate-slide-in-left  { animation: slideInLeft 0.45s var(--ease-out) both; }
+.animate-scale-in       { animation: scaleIn 0.25s var(--ease-out) both; }
+
+/* Slide in from the right (drawers / panels) */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in-right { animation: slideInRight 0.35s var(--ease-out) both; }
+
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
 .delay-300 { animation-delay: 300ms; }

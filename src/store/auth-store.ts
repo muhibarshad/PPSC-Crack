@@ -125,7 +125,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   /* ── Login ───────────────────────────────────── */
   login: async (email, password) => {
-    set({ loading: true, error: null });
+    set({ error: null });
     try {
       // 1) Supabase sign-in
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -140,17 +140,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         token,
       );
 
-      set({ session: data.session, user: mapUser(res.user), loading: false });
+      set({ session: data.session, user: mapUser(res.user) });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Login failed';
-      set({ error: message, loading: false });
+      set({ error: message });
       throw err;
     }
   },
 
   /* ── Register ────────────────────────────────── */
   register: async (name, email, password, phone) => {
-    set({ loading: true, error: null });
+    set({ error: null });
     try {
       await api('/auth/register', { name, email, password, phone: phone || undefined });
 
@@ -158,7 +158,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) {
         // Email confirmation may be required
-        set({ loading: false });
         return;
       }
 
@@ -169,17 +168,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         token,
       );
 
-      set({ session: data.session, user: mapUser(res.user), loading: false });
+      set({ session: data.session, user: mapUser(res.user) });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Registration failed';
-      set({ error: message, loading: false });
+      set({ error: message });
       throw err;
     }
   },
 
   /* ── Google OAuth ────────────────────────────── */
   loginWithGoogle: async () => {
-    set({ loading: true, error: null });
+    set({ error: null });
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -189,54 +188,51 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Redirect happens — no state update needed here
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Google login failed';
-      set({ error: message, loading: false });
+      set({ error: message });
       throw err;
     }
   },
 
   /* ── Magic Link ──────────────────────────────── */
   sendMagicLink: async (email) => {
-    set({ loading: true, error: null });
+    set({ error: null });
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: { shouldCreateUser: true },
       });
       if (error) throw new Error(error.message);
-      set({ loading: false });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to send magic link';
-      set({ error: message, loading: false });
+      set({ error: message });
       throw err;
     }
   },
 
   /* ── Forgot Password ─────────────────────────── */
   forgotPassword: async (email) => {
-    set({ loading: true, error: null });
+    set({ error: null });
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       });
       if (error) throw new Error(error.message);
-      set({ loading: false });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to send reset email';
-      set({ error: message, loading: false });
+      set({ error: message });
       throw err;
     }
   },
 
   /* ── Logout ──────────────────────────────────── */
   logout: async () => {
-    set({ loading: true, error: null });
     try {
       await supabase.auth.signOut();
       // Also hit backend to clear httpOnly cookie
       await api('/auth/logout').catch(() => {});
-      set({ user: null, session: null, loading: false });
+      set({ user: null, session: null });
     } catch {
-      set({ user: null, session: null, loading: false });
+      set({ user: null, session: null });
     }
   },
 
@@ -254,44 +250,84 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   /* ── Init (listen for Supabase auth events) ──── */
   init: () => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        set({ session, loading: false, initialised: true });
+    set({ loading: true });
 
-        if (session?.access_token) {
-          // Sync with our backend to get the full user profile
-          try {
-            const data = await api<Record<string, unknown>>(
+    // Cancellation flag — prevents stale async work after React cleanup
+    let cancelled = false;
+
+    /**
+     * Core session handler — called for INITIAL_SESSION, SIGNED_IN,
+     * and TOKEN_REFRESHED.  Fetches the user profile from our backend
+     * and falls back to an explicit token refresh when the access token
+     * that Supabase gave us is expired.
+     */
+    async function handleSession(session: Session | null): Promise<void> {
+      if (cancelled) return;
+
+      if (!session) {
+        set({ user: null, session: null, loading: false, initialised: true });
+        return;
+      }
+
+      set({ session });
+
+      try {
+        const data = await api<Record<string, unknown>>(
+          '/auth/me',
+          undefined,
+          session.access_token,
+        );
+        if (cancelled) return;
+        set({ user: mapUser(data), loading: false, initialised: true });
+      } catch {
+        // Access token is likely expired — try refreshing via Supabase
+        if (cancelled) return;
+        try {
+          const { data: refreshData } = await supabase.auth.refreshSession();
+          if (cancelled) return;
+          if (refreshData.session) {
+            set({ session: refreshData.session });
+            const userData = await api<Record<string, unknown>>(
               '/auth/me',
               undefined,
-              session.access_token,
+              refreshData.session.access_token,
             );
-            set({ user: mapUser(data) });
-          } catch {
-            set({ user: null });
+            if (cancelled) return;
+            set({ user: mapUser(userData), loading: false, initialised: true });
+          } else {
+            set({ user: null, session: null, loading: false, initialised: true });
           }
-        } else {
-          set({ user: null });
+        } catch {
+          if (cancelled) return;
+          set({ user: null, session: null, loading: false, initialised: true });
         }
+      }
+    }
 
-        if (event === 'SIGNED_OUT') {
-          set({ user: null, session: null });
-        }
-      },
-    );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (cancelled) return;
 
-    // Also check current session on mount
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        set({ session, loading: true });
-        api<Record<string, unknown>>('/auth/me', undefined, session.access_token)
-          .then((data) => set({ user: mapUser(data), loading: false, initialised: true }))
-          .catch(() => set({ user: null, loading: false, initialised: true }));
-      } else {
-        set({ loading: false, initialised: true });
+      if (event === 'SIGNED_OUT') {
+        set({ user: null, session: null, loading: false, initialised: true });
+        return;
+      }
+
+      // INITIAL_SESSION is the reliable source of the persisted session
+      // on page load — process it instead of a separate getSession() call.
+      if (
+        event === 'INITIAL_SESSION' ||
+        event === 'SIGNED_IN' ||
+        event === 'TOKEN_REFRESHED'
+      ) {
+        await handleSession(session);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      subscription.unsubscribe();
+    };
   },
 }));

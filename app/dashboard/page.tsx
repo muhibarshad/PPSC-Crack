@@ -99,7 +99,7 @@ async function fetchDashboard(token: string): Promise<DashboardData> {
 
 function DashboardContent() {
   const router = useRouter();
-  const { user, session, logout } = useAuthStore();
+  const { user, session, loading: authLoading, initialised, logout } = useAuthStore();
 
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,9 +128,12 @@ function DashboardContent() {
     }
   }, [session?.access_token]);
 
+  // Re-fetch when session becomes available (after auth init)
   useEffect(() => {
-    load();
-  }, [load]);
+    if (initialised && session?.access_token) {
+      load();
+    }
+  }, [initialised, session?.access_token, load]);
 
   /* ── Time-based greeting ── */
   const hour = new Date().getHours();

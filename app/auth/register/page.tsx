@@ -33,8 +33,9 @@ function getPasswordStrength(pw: string): { score: number; label: string; color:
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { register: authRegister, loading, error: storeError, setError } = useAuthStore();
+  const { register: authRegister, error: storeError, setError } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
   const {
@@ -53,6 +54,7 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     setError(null);
     setSuccessMsg('');
+    setSubmitting(true);
     try {
       await authRegister(data.name, data.email, data.password, data.phone || undefined);
       // If login succeeded (no email confirmation required)
@@ -66,6 +68,8 @@ export default function RegisterPage() {
       }
     } catch {
       // Error set in store
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -188,10 +192,10 @@ export default function RegisterPage() {
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={submitting}
           className="btn btn-primary btn-lg w-full animate-pulse-glow disabled:opacity-60 disabled:cursor-not-allowed disabled:animate-none mt-2"
         >
-          {loading ? (
+          {submitting ? (
             <span className="flex items-center gap-2">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

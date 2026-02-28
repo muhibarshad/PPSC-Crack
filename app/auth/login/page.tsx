@@ -19,8 +19,9 @@ import { loginSchema, type LoginFormData } from '@/lib/validations/auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, loading, error: storeError, setError } = useAuthStore();
+  const { login, error: storeError, setError } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const {
     register,
@@ -33,6 +34,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginFormData) => {
     setError(null);
+    setSubmitting(true);
     try {
       await login(data.email, data.password);
       // Redirect based on role + onboarding state
@@ -44,6 +46,8 @@ export default function LoginPage() {
       }
     } catch {
       // Error already set in store
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -128,10 +132,10 @@ export default function LoginPage() {
         {/* Submit */}
         <button
           type="submit"
-          disabled={loading}
+          disabled={submitting}
           className="btn btn-primary btn-lg w-full animate-pulse-glow disabled:opacity-60 disabled:cursor-not-allowed disabled:animate-none"
         >
-          {loading ? (
+          {submitting ? (
             <span className="flex items-center gap-2">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />

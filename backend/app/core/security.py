@@ -3,17 +3,23 @@ PPSC Crack — Security Helpers
 ===============================
 Supabase JWT verification, password hashing, and token cookie helpers.
 
-Supabase issues JWTs signed with the project's JWT secret.  We verify
-them server-side so that every FastAPI route can trust ``request.state.user``.
+Supabase issues JWTs signed with ES256 (ECDSA) using public JWKS.
+We fetch the JWKS once at startup and verify tokens server-side so
+that every FastAPI route can trust ``request.state.user``.
 """
 
 from datetime import datetime, timedelta, timezone
 from typing import Any
+import logging
 
 import bcrypt
-from jose import jwt, JWTError
+import httpx
+from jose import jwt, JWTError, jwk
+from jose.utils import base64url_decode
 
 from app.config import settings
+
+logger = logging.getLogger(__name__)
 
 # ═══════════════════════════════════════════════════════════
 # Password Hashing (still used for local fallback / admin)
@@ -31,34 +37,90 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 
 # ═══════════════════════════════════════════════════════════
-# Supabase JWT Verification
+# Supabase JWKS Cache & JWT Verification
 # ═══════════════════════════════════════════════════════════
+
+_jwks_cache: dict[str, Any] | None = None
+
+
+def _fetch_jwks() -> dict[str, Any]:
+    """Fetch the JWKS from Supabase (cached after first call)."""
+    global _jwks_cache
+    if _jwks_cache is not None:
+        return _jwks_cache
+
+    jwks_url = f"{settings.SUPABASE_URL}/auth/v1/.well-known/jwks.json"
+    try:
+        resp = httpx.get(jwks_url, timeout=10)
+        resp.raise_for_status()
+        _jwks_cache = resp.json()
+        logger.info("Fetched Supabase JWKS (%d keys)", len(_jwks_cache.get("keys", [])))
+        return _jwks_cache
+    except Exception as exc:
+        logger.warning("Failed to fetch JWKS from %s: %s", jwks_url, exc)
+        return {"keys": []}
+
+
+def _get_signing_key(token: str) -> dict[str, Any] | None:
+    """Find the matching JWK for a token's kid header."""
+    import json
+
+    header = jwt.get_unverified_header(token)
+    kid = header.get("kid")
+    alg = header.get("alg", "ES256")
+
+    jwks = _fetch_jwks()
+    for key in jwks.get("keys", []):
+        if key.get("kid") == kid:
+            return key
+
+    # kid not found — refresh JWKS once (key rotation)
+    global _jwks_cache
+    _jwks_cache = None
+    jwks = _fetch_jwks()
+    for key in jwks.get("keys", []):
+        if key.get("kid") == kid:
+            return key
+
+    return None
+
 
 def verify_supabase_token(token: str) -> dict[str, Any]:
     """Decode and verify a Supabase-issued JWT.
 
+    Supports both:
+    - ES256 (ECDSA) tokens verified via JWKS public keys (new Supabase default)
+    - HS256 (HMAC) tokens verified via SUPABASE_JWT_SECRET (legacy fallback)
+
     Returns the full payload dict on success.
     Raises ``JWTError`` on invalid / expired token.
-
-    The token is verified against ``SUPABASE_JWT_SECRET`` using HS256.
-    Supabase tokens include:
-        - sub: user UUID
-        - email: user email
-        - role: "authenticated" | "anon"
-        - aud: "authenticated"
-        - exp: expiry timestamp
-        - user_metadata: { name, avatar_url, ... }
-        - app_metadata: { provider, providers, ... }
     """
-    payload = jwt.decode(
-        token,
-        settings.SUPABASE_JWT_SECRET,
-        algorithms=[settings.ALGORITHM],
-        options={
-            "verify_aud": False,  # Supabase aud varies
-        },
-    )
-    return payload
+    # Inspect the token header to determine algorithm
+    header = jwt.get_unverified_header(token)
+    alg = header.get("alg", "HS256")
+
+    if alg in ("ES256", "ES384", "ES512", "RS256", "RS384", "RS512"):
+        # Asymmetric — use JWKS public key
+        signing_key = _get_signing_key(token)
+        if signing_key is None:
+            raise JWTError("No matching JWKS key found for token kid")
+
+        payload = jwt.decode(
+            token,
+            signing_key,
+            algorithms=[alg],
+            options={"verify_aud": False},
+        )
+        return payload
+    else:
+        # HS256 legacy — use JWT secret directly
+        payload = jwt.decode(
+            token,
+            settings.SUPABASE_JWT_SECRET,
+            algorithms=[settings.ALGORITHM],
+            options={"verify_aud": False},
+        )
+        return payload
 
 
 def decode_supabase_token_unverified(token: str) -> dict[str, Any]:
