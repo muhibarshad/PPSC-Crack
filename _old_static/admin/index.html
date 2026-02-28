@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — PPSC Crack</title>
+  <link rel="stylesheet" href="../assets/css/base.css" />
+  <link rel="stylesheet" href="./admin.css" />
+</head>
+<body>
+
+  <!-- Background atmosphere -->
+  <div class="bg-atmosphere"></div>
+
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <div class="admin-layout">
+
+    <!-- ══════════════════════════════════════════
+         SIDEBAR
+    ══════════════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sidebar-header">
+        <div class="sidebar-logo-mark">P</div>
+        <span class="sidebar-brand">PPSC <span class="text-primary">Crack</span></span>
+        <span class="sidebar-badge">ADMIN</span>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebarNav">
+        <!-- Injected by JS -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-user" id="sidebarUser">
+          <!-- Injected by JS -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- ══════════════════════════════════════════
+         MAIN CONTENT
+    ══════════════════════════════════════════ -->
+    <main class="main-content">
+
+      <!-- TOP BAR -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+          <div class="topbar-subtitle" id="topbarSubtitle">Welcome back, Admin</div>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-search">
+            <span id="searchIcon"></span>
+            <input type="text" placeholder="Search users, papers..." />
+          </div>
+          <div class="topbar-icon-btn" title="Notifications">
+            <span id="bellIcon"></span>
+            <span class="notif-badge"></span>
+          </div>
+          <div class="topbar-icon-btn" title="Settings">
+            <span id="settingsIcon"></span>
+          </div>
+          <!-- Mobile menu toggle -->
+          <div class="topbar-icon-btn" id="mobileSidebarToggle" title="Menu" style="display:none">
+            <span id="menuIcon"></span>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <div class="page-content" id="pageContent">
+
+        <!-- STATS CARDS -->
+        <div class="stats-grid" id="statsGrid"></div>
+
+        <!-- ROW 1: Revenue Chart + Quick Actions -->
+        <div class="dashboard-grid" id="dashboardGrid">
+
+          <!-- Revenue Chart -->
+          <div class="glass section-card">
+            <div class="section-card-header">
+              <div>
+                <div class="section-card-title">Revenue Overview</div>
+                <div class="section-card-subtitle">Last 7 days</div>
+              </div>
+              <select class="btn btn-ghost btn-sm" style="cursor:pointer">
+                <option>This Week</option>
+                <option>This Month</option>
+                <option>This Year</option>
+              </select>
+            </div>
+            <div class="chart-bars" id="revenueChart"></div>
+            <div id="chartLegend" style="display:flex;gap:var(--space-6)"></div>
+          </div>
+
+          <!-- Right Column -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+
+            <!-- Plan Distribution -->
+            <div class="glass section-card">
+              <div class="section-card-header">
+                <div>
+                  <div class="section-card-title">Plan Distribution</div>
+                  <div class="section-card-subtitle">52,840 total users</div>
+                </div>
+              </div>
+              <div class="plan-dist" id="planDist"></div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="glass section-card">
+              <div class="section-card-header">
+                <div class="section-card-title">Quick Actions</div>
+              </div>
+              <div class="quick-actions" id="quickActions"></div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ROW 2: Users Table + Activity -->
+        <div class="dashboard-grid" style="margin-top:var(--space-6)">
+
+          <!-- Users Table -->
+          <div class="glass section-card">
+            <div class="section-card-header">
+              <div>
+                <div class="section-card-title">Recent Users</div>
+                <div class="section-card-subtitle">Latest registrations</div>
+              </div>
+              <button class="btn btn-ghost btn-sm">View All</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="users-table" id="usersTable"></table>
+            </div>
+          </div>
+
+          <!-- Right Column: Activity + Subjects -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-6)">
+
+            <!-- Activity Log -->
+            <div class="glass section-card">
+              <div class="section-card-header">
+                <div>
+                  <div class="section-card-title">Activity Log</div>
+                  <div class="section-card-subtitle">Real-time events</div>
+                </div>
+                <div class="status-dot online" style="margin-top:4px"></div>
+              </div>
+              <div class="activity-feed" id="activityFeed"></div>
+            </div>
+
+            <!-- Subject Frequency -->
+            <div class="glass section-card">
+              <div class="section-card-header">
+                <div>
+                  <div class="section-card-title">Topic Frequency</div>
+                  <div class="section-card-subtitle">% of exam coverage</div>
+                </div>
+              </div>
+              <div class="subject-list" id="subjectList"></div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <script type="module" src="./admin.js"></script>
+</body>
+</html>
