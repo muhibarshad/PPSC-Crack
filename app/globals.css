@@ -492,3 +492,247 @@ h1, h2, h3, h4, h5, h6 {
   .container { padding: 0 var(--space-4); }
   .section { padding: var(--space-16) 0; }
 }
+
+/* ═══════════════════════════════════════════
+   STORY READER — Immersive Reading
+   ═══════════════════════════════════════════ */
+
+/* Auto-highlight: Dates → orange */
+.story-hl-date {
+  color: var(--clr-warning);
+  font-weight: var(--weight-medium);
+  background: var(--clr-warning-dim);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgba(251, 146, 60, 0.3);
+}
+
+/* Auto-highlight: Named entities → blue */
+.story-hl-entity {
+  color: var(--clr-info);
+  font-weight: var(--weight-medium);
+  background: var(--clr-info-dim);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* Auto-highlight: Organizations → purple */
+.story-hl-org {
+  color: var(--clr-primary-light);
+  font-weight: var(--weight-medium);
+  background: var(--clr-primary-dim);
+  padding: 1px 4px;
+  border-radius: 3px;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* Paragraph hover effect */
+.story-paragraph-wrapper:hover {
+  background: rgba(139, 92, 246, 0.02) !important;
+  border-left-color: rgba(139, 92, 246, 0.15) !important;
+}
+
+.story-paragraph-wrapper:hover .story-paragraph {
+  color: #fff;
+}
+
+/* Selection styling inside story */
+.story-paragraph::selection {
+  background: rgba(139, 92, 246, 0.25);
+  color: #fff;
+}
+
+/* Smooth section transitions */
+.story-section-block {
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+}
+
+/* Top bar shadow on scroll */
+.story-top-bar {
+  transition: box-shadow var(--duration-normal) var(--ease-out);
+}
+
+/* Responsive story reader */
+@media (max-width: 768px) {
+  .story-content-wrapper {
+    padding-left: var(--space-4) !important;
+    padding-right: var(--space-4) !important;
+  }
+
+  .story-paragraph {
+    font-size: var(--text-base) !important;
+    line-height: 1.75 !important;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   PRACTICE TEST — Animations & Cards
+   ═══════════════════════════════════════════ */
+
+/* Topic selector cards */
+.practice-topic-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-4) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all var(--duration-normal) var(--ease-out);
+  cursor: pointer;
+}
+
+.practice-topic-card:hover {
+  background: rgba(139, 92, 246, 0.06);
+  border-color: var(--clr-glass-border-hover);
+  transform: translateY(-2px);
+}
+
+.practice-topic-active {
+  background: var(--clr-primary-dim) !important;
+  border-color: rgba(139, 92, 246, 0.35) !important;
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.12);
+}
+
+/* Option cards — selection feedback */
+.practice-option-card {
+  position: relative;
+}
+
+.practice-option-selected {
+  animation: practiceOptionPulse 0.6s var(--ease-out) both;
+  border-color: rgba(139, 92, 246, 0.5) !important;
+  box-shadow: 0 0 40px rgba(139, 92, 246, 0.2) !important;
+}
+
+@keyframes practiceOptionPulse {
+  0%   { transform: scale(1); }
+  20%  { transform: scale(1.03); }
+  50%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* Correct answer flash (green) */
+.practice-correct-flash {
+  animation: correctFlash 0.6s var(--ease-out) both;
+}
+
+@keyframes correctFlash {
+  0%   { background: inherit; }
+  25%  { background: var(--clr-success-dim); border-color: rgba(52, 211, 153, 0.5); box-shadow: 0 0 40px rgba(52, 211, 153, 0.2); }
+  100% { background: inherit; }
+}
+
+/* Wrong answer shake (red) */
+.practice-wrong-shake {
+  animation: wrongShake 0.5s var(--ease-out) both;
+}
+
+@keyframes wrongShake {
+  0%, 100% { transform: translateX(0); }
+  10%      { transform: translateX(-6px); background: var(--clr-danger-dim); }
+  30%      { transform: translateX(6px); }
+  50%      { transform: translateX(-4px); }
+  70%      { transform: translateX(4px); }
+  90%      { transform: translateX(-2px); }
+}
+
+/* Question entrance slide */
+.practice-question-enter {
+  animation: questionSlideIn 0.4s var(--ease-out) both;
+}
+
+@keyframes questionSlideIn {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* ═══════════════════════════════════════════
+   CURRENT AFFAIRS — Card Slide-In
+   ═══════════════════════════════════════════ */
+@keyframes caCardSlideIn {
+  0%   { opacity: 0; transform: translateX(60px) scale(0.97); }
+  60%  { opacity: 1; transform: translateX(-4px) scale(1.005); }
+  80%  { transform: translateX(2px) scale(0.998); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.ca-card-enter {
+  animation: caCardSlideIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Staggered delays for card feed */
+.ca-delay-0 { animation-delay: 0ms; }
+.ca-delay-1 { animation-delay: 60ms; }
+.ca-delay-2 { animation-delay: 120ms; }
+.ca-delay-3 { animation-delay: 180ms; }
+.ca-delay-4 { animation-delay: 240ms; }
+.ca-delay-5 { animation-delay: 300ms; }
+.ca-delay-6 { animation-delay: 360ms; }
+.ca-delay-7 { animation-delay: 420ms; }
+.ca-delay-8 { animation-delay: 480ms; }
+.ca-delay-9 { animation-delay: 540ms; }
+
+/* Learned card muted styling */
+.ca-card-learned {
+  opacity: 0.55;
+  filter: saturate(0.5);
+  transition: opacity var(--duration-normal) var(--ease-out),
+              filter var(--duration-normal) var(--ease-out);
+}
+.ca-card-learned:hover {
+  opacity: 0.85;
+  filter: saturate(0.8);
+}
+
+/* MCQ option correct flash */
+.ca-mcq-correct {
+  animation: caCorrectFlash 0.5s var(--ease-out) both;
+}
+@keyframes caCorrectFlash {
+  0%   { background: inherit; }
+  30%  { background: var(--clr-success-dim); border-color: rgba(52, 211, 153, 0.5); box-shadow: 0 0 20px rgba(52, 211, 153, 0.15); }
+  100% { background: var(--clr-success-dim); border-color: rgba(52, 211, 153, 0.3); }
+}
+
+/* MCQ option wrong shake */
+.ca-mcq-wrong {
+  animation: caWrongShake 0.4s var(--ease-out) both;
+}
+@keyframes caWrongShake {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-5px); background: var(--clr-danger-dim); }
+  30%      { transform: translateX(5px); }
+  45%      { transform: translateX(-3px); }
+  60%      { transform: translateX(3px); }
+}
+
+/* Category tab active indicator */
+.ca-tab-active {
+  color: var(--clr-primary) !important;
+  border-color: var(--clr-primary) !important;
+  background: var(--clr-primary-dim) !important;
+}
+
+/* Score ring draw animation */
+.practice-score-ring {
+  animation: scoreRingDraw 1.2s var(--ease-out) both;
+  animation-delay: 200ms;
+}
+
+@keyframes scoreRingDraw {
+  from { stroke-dasharray: 0 327; }
+}
+
+/* Timer danger pulse */
+.practice-timer-danger {
+  animation: timerDanger 1s ease-in-out infinite;
+}
+
+@keyframes timerDanger {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}

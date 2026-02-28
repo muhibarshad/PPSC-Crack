@@ -10,25 +10,24 @@ them server-side so that every FastAPI route can trust ``request.state.user``.
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
+import bcrypt
 from jose import jwt, JWTError
-from passlib.context import CryptContext
 
 from app.config import settings
 
 # ═══════════════════════════════════════════════════════════
 # Password Hashing (still used for local fallback / admin)
 # ═══════════════════════════════════════════════════════════
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(plain: str) -> str:
     """Return bcrypt hash of plain-text password."""
-    return pwd_context.hash(plain)
+    return bcrypt.hashpw(plain.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
 
 def verify_password(plain: str, hashed: str) -> bool:
     """Check plain-text against hashed password."""
-    return pwd_context.verify(plain, hashed)
+    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
 
 
 # ═══════════════════════════════════════════════════════════

@@ -15,6 +15,7 @@ from app.crud.crud_pattern_snapshot import crud_pattern_snapshot
 from app.crud.crud_current_affair import crud_current_affair
 from app.crud.crud_user import crud_user
 from app.crud.crud_admin_note import crud_admin_note
+from app.crud.crud_prediction import crud_prediction
 
 __all__ = [
     "CRUDBase",
@@ -27,4 +28,5 @@ __all__ = [
     "crud_current_affair",
     "crud_user",
     "crud_admin_note",
+    "crud_prediction",
 ]

@@ -35,9 +35,13 @@ export default function LoginPage() {
     setError(null);
     try {
       await login(data.email, data.password);
-      // Redirect based on role
+      // Redirect based on role + onboarding state
       const user = useAuthStore.getState().user;
-      router.push(getRedirectPath(user?.role ?? 'student'));
+      if (user) {
+        router.push(getRedirectPath(user));
+      } else {
+        router.push('/dashboard');
+      }
     } catch {
       // Error already set in store
     }

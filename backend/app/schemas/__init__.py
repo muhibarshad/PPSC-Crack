@@ -72,12 +72,25 @@ from app.schemas.pattern_snapshot import (
     PatternSnapshotResponse,
 )
 
+# Pattern overview (intelligence engine)
+from app.schemas.pattern_overview import (
+    DueTopic,
+    HighFrequencyFact,
+    PatternOverviewResponse,
+    RepeatQuestionSummary,
+    TopicTrend,
+)
+
 # Current affairs
 from app.schemas.current_affair import (
     CurrentAffairCreate,
     CurrentAffairListResponse,
     CurrentAffairResponse,
     CurrentAffairUpdate,
+    CurrentAffairAdminResponse,
+    CurrentAffairAdminListResponse,
+    CurrentAffairManualAdd,
+    CurrentAffairApprove,
 )
 
 # Users
@@ -95,6 +108,20 @@ from app.schemas.admin_note import (
     AdminNoteListResponse,
     AdminNoteResponse,
     AdminNoteUpdate,
+    AdminNoteUploadResponse,
+    AdminNoteProcessingResult,
+)
+
+# Predictions
+from app.schemas.prediction import (
+    PredictionGenerateRequest,
+    PredictionUpdate,
+    PredictedQuestion,
+    PredictionResponse,
+    PredictionListResponse,
+    PredictionPublishResponse,
+    PredictionSSEEvent,
+    PredictionGenerateResponse,
 )
 
 __all__ = [
@@ -121,11 +148,21 @@ __all__ = [
     "TopicFrequencyCreate", "TopicFrequencyResponse", "TopicFrequencyListResponse",
     # Pattern snapshots
     "PatternSnapshotCreate", "PatternSnapshotResponse", "PatternSnapshotListResponse",
+    # Pattern overview
+    "PatternOverviewResponse", "TopicTrend", "DueTopic",
+    "HighFrequencyFact", "RepeatQuestionSummary",
     # Current affairs
     "CurrentAffairCreate", "CurrentAffairUpdate",
     "CurrentAffairResponse", "CurrentAffairListResponse",
+    "CurrentAffairAdminResponse", "CurrentAffairAdminListResponse",
+    "CurrentAffairManualAdd", "CurrentAffairApprove",
     # Users
     "UserCreate", "UserUpdate", "UserResponse", "UserBrief", "UserAdminResponse",
     # Admin notes
     "AdminNoteCreate", "AdminNoteUpdate", "AdminNoteResponse", "AdminNoteListResponse",
+    "AdminNoteUploadResponse", "AdminNoteProcessingResult",
+    # Predictions
+    "PredictionGenerateRequest", "PredictionUpdate", "PredictedQuestion",
+    "PredictionResponse", "PredictionListResponse", "PredictionPublishResponse",
+    "PredictionSSEEvent", "PredictionGenerateResponse",
 ]

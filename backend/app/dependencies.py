@@ -17,6 +17,7 @@ from app.config import settings
 from app.core.security import verify_supabase_token, decode_token
 from app.database import get_db, get_redis
 from app.models.user import User
+from app.services.openai.client import OpenAIService, get_openai_service
 
 # ── Bearer token extractor (works with Supabase JWTs) ──────
 bearer_scheme = HTTPBearer(auto_error=False)
@@ -24,6 +25,7 @@ bearer_scheme = HTTPBearer(auto_error=False)
 # Type aliases for convenience
 DBSession = Annotated[AsyncSession, Depends(get_db)]
 RedisConn = Annotated[aioredis.Redis, Depends(get_redis)]
+OpenAI = Annotated[OpenAIService, Depends(get_openai_service)]
 
 
 async def _extract_token(

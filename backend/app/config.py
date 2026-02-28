@@ -61,6 +61,36 @@ class Settings(BaseSettings):
 
     # ── External APIs ────────────────────────
     OPENAI_API_KEY: str = ""
+    OPENAI_ORG_ID: str | None = None
+
+    # ── OpenAI Model Defaults ────────────────
+    OPENAI_MODEL_GPT4O: str = "gpt-4o"
+    OPENAI_MODEL_GPT4O_MINI: str = "gpt-4o-mini"
+    OPENAI_MODEL_EMBEDDING: str = "text-embedding-3-small"
+    OPENAI_EMBEDDING_DIMENSIONS: int = 1536
+
+    # ── OpenAI Retry / Rate-Limit ────────────
+    OPENAI_MAX_RETRIES: int = 5
+    OPENAI_RETRY_BASE_DELAY: float = 1.0
+    OPENAI_RETRY_MAX_DELAY: float = 60.0
+    OPENAI_REQUEST_TIMEOUT: float = 120.0
+
+    # ── Cost Tracking ────────────────────────
+    OPENAI_COST_LOG_ENABLED: bool = True
+
+    # ── Object Storage (S3 / Cloudflare R2) ──
+    STORAGE_BACKEND: str = "s3"  # "s3" or "r2" or "local"
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION: str = "us-east-1"
+    S3_BUCKET_NAME: str = "ppsc-crack-scans"
+    S3_ENDPOINT_URL: str | None = None  # Set for R2: https://<account>.r2.cloudflarestorage.com
+    S3_PUBLIC_URL_PREFIX: str = ""  # CDN prefix for public URLs, e.g. https://cdn.ppsc-crack.pk/scans
+
+    # ── Scan OCR ─────────────────────────────
+    OCR_CONFIDENCE_THRESHOLD: float = 0.85
+    OCR_MAX_IMAGES: int = 4
+    SCAN_MAX_FILE_SIZE_MB: int = 10
 
 
 settings = Settings()

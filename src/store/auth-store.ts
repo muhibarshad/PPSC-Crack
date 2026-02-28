@@ -23,6 +23,7 @@ export interface AppUser {
   auth_provider: string;
   is_premium: boolean;
   subscription_tier: string;
+  selected_job_types: string[] | null;
 }
 
 interface AuthState {
@@ -89,12 +90,23 @@ function mapUser(data: Record<string, unknown>): AppUser {
     auth_provider: (data.auth_provider as string) || 'email',
     is_premium: (data.is_premium as boolean) || false,
     subscription_tier: (data.subscription_tier as string) || 'free',
+    selected_job_types: (data.selected_job_types as string[] | null) || null,
   };
 }
 
-/** Return the target redirect path based on role. */
-export function getRedirectPath(role: AppUser['role']): string {
-  return role === 'admin' ? '/admin' : '/dashboard';
+/** Return the target redirect path based on role + onboarding state. */
+export function getRedirectPath(user: AppUser): string {
+  if (user.role === 'admin') return '/admin';
+  // Students who haven't completed onboarding go to the onboarding flow
+  if (!user.selected_job_types || user.selected_job_types.length === 0) {
+    return '/onboarding';
+  }
+  return '/dashboard';
+}
+
+/** Check if a student still needs onboarding. */
+export function needsOnboarding(user: AppUser): boolean {
+  return user.role === 'student' && (!user.selected_job_types || user.selected_job_types.length === 0);
 }
 
 /* ── Store ─────────────────────────────────────── */

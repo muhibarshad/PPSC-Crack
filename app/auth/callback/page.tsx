@@ -51,8 +51,19 @@ export default function AuthCallbackPage() {
         const payload = await res.json();
 
         // Wait for the Zustand store to pick up the session, then redirect
-        const role = payload.user?.role || 'student';
-        router.replace(getRedirectPath(role));
+        const u = payload.user || {};
+        const redirectUser = {
+          id: u.id || '',
+          email: u.email || '',
+          name: u.name || '',
+          role: (u.role || 'student') as 'student' | 'admin' | 'moderator',
+          avatar_url: u.avatar_url || null,
+          auth_provider: u.auth_provider || 'email',
+          is_premium: u.is_premium || false,
+          subscription_tier: u.subscription_tier || 'free',
+          selected_job_types: u.selected_job_types || null,
+        };
+        router.replace(getRedirectPath(redirectUser));
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : 'Authentication failed';
         setError(msg);

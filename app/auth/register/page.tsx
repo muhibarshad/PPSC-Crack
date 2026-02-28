@@ -58,7 +58,7 @@ export default function RegisterPage() {
       // If login succeeded (no email confirmation required)
       const user = useAuthStore.getState().user;
       if (user) {
-        router.push(getRedirectPath(user.role));
+        router.push(getRedirectPath(user));
       } else {
         setSuccessMsg(
           'Account created! Check your email to confirm, then sign in.',
