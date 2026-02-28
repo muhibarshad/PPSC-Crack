@@ -46,10 +46,10 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <a href="/admin" className="text-sm font-semibold text-white/50 hover:text-white transition-colors px-4 py-2">
-              Admin
+            <a href="/auth/login" className="text-sm font-semibold text-white/50 hover:text-white transition-colors px-4 py-2">
+              Login
             </a>
-            <a href="#pricing" className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-all hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+            <a href="/auth/register" className="inline-flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-bold px-6 py-2.5 rounded-xl transition-all hover:scale-105 shadow-[0_0_15px_rgba(255,255,255,0.05)]">
               Get Started
             </a>
           </div>
@@ -78,8 +78,8 @@ export default function Navbar() {
               </a>
             ))}
             <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/5">
-              <a href="/admin" className="text-center text-sm font-semibold text-white/50 py-2">Admin</a>
-              <a href="#pricing" className="bg-primary text-white text-center font-bold px-6 py-3 rounded-xl">Get Started</a>
+              <a href="/auth/login" className="text-center text-sm font-semibold text-white/50 py-2">Login</a>
+              <a href="/auth/register" className="bg-primary text-white text-center font-bold px-6 py-3 rounded-xl">Get Started</a>
             </div>
           </div>
         )}

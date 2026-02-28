@@ -1,4 +1,5 @@
 import './globals.css';
+import AuthProvider from '@/components/auth/AuthProvider';
 
 export const metadata = {
   title: 'PPSC Crack — AI-Powered Exam Domination System',
@@ -17,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="bg-atmosphere" />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

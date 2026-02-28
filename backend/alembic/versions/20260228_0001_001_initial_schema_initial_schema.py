@@ -217,21 +217,26 @@ def upgrade() -> None:
     op.create_table(
         "users",
         sa.Column("id", postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), primary_key=True),
+        sa.Column("supabase_uid", sa.String(255), nullable=True, unique=True, comment="Supabase Auth user UUID"),
         sa.Column("email", sa.String(255), nullable=False, unique=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("phone", sa.String(20), nullable=True),
-        sa.Column("password_hash", sa.String(255), nullable=False),
-        sa.Column("role", sa.String(20), server_default="'user'", comment="user | admin | moderator"),
+        sa.Column("password_hash", sa.String(255), nullable=True, comment="Nullable — Supabase handles auth; kept for admin seed / fallback"),
+        sa.Column("avatar_url", sa.String(500), nullable=True),
+        sa.Column("auth_provider", sa.String(50), server_default="'email'", comment="email | google | magic_link"),
+        sa.Column("role", sa.String(20), server_default="'student'", comment="student | admin | moderator"),
         sa.Column("is_premium", sa.Boolean(), server_default="false"),
         sa.Column("subscription_tier", sa.String(20), server_default="'free'", comment="free | pro | elite"),
         sa.Column("subscription_expires_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column("selected_job_types", postgresql.ARRAY(postgresql.UUID(as_uuid=True)), nullable=True),
         sa.Column("learning_progress", postgresql.JSON(), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
     op.create_index("ix_users_email", "users", ["email"], unique=True)
     op.create_index("ix_users_role", "users", ["role"])
     op.create_index("ix_users_subscription_tier", "users", ["subscription_tier"])
+    op.create_index("ix_users_supabase_uid", "users", ["supabase_uid"])
 
     # ════════════════════════════════════════════════════════
     # 9. admin_notes

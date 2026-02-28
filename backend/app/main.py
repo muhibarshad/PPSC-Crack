@@ -5,16 +5,21 @@ Entry point for the backend server.
 Run with:  uvicorn app.main:app --reload --port 8000
 """
 
+import logging
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
 from app.config import settings
 from app.api.v1.router import api_v1_router
+from app.core.supabase_client import init_supabase
 from app.database import engine, Base, redis_pool
+
+logger = logging.getLogger(__name__)
 
 
 # ── Lifespan ────────────────────────────────────────────────
@@ -29,6 +34,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     # Verify Redis connectivity
     await redis_pool.ping()
+
+    # Initialise Supabase clients (anon + admin)
+    init_supabase()
 
     yield
 
@@ -56,8 +64,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Global Exception Handler ────────────────────────────────
+@app.exception_handler(Exception)
+async def _unhandled_exception_handler(request: Request, exc: Exception):
+    """Catch-all so the frontend always receives JSON, never a bare 500."""
+    logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error. Please try again later."},
+    )
+
+
 # ── Routers ─────────────────────────────────────────────────
 app.include_router(api_v1_router, prefix="/api/v1")
+
+# Shortcut: mount auth endpoints at /api/auth as well (user-facing path)
+from app.api.v1.endpoints.auth import router as auth_router
+app.include_router(auth_router, prefix="/api/auth", tags=["Auth"])
 
 
 # ── Root ────────────────────────────────────────────────────

@@ -32,11 +32,26 @@ class Settings(BaseSettings):
     # ── Redis ────────────────────────────────
     REDIS_URL: str = "redis://localhost:6379/0"
 
+    # ── Supabase ───────────────────────────────
+    SUPABASE_URL: str = "https://your-project.supabase.co"
+    SUPABASE_ANON_KEY: str = "your-anon-key"
+    SUPABASE_SERVICE_ROLE_KEY: str = "your-service-role-key"
+    SUPABASE_JWT_SECRET: str = "your-jwt-secret"
+
     # ── Auth / JWT ───────────────────────────
     SECRET_KEY: str = "change-me-to-a-long-random-string"
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # ── Auth Rate Limiting ───────────────────
+    AUTH_RATE_LIMIT_MAX: int = 10
+    AUTH_RATE_LIMIT_WINDOW_SECONDS: int = 900  # 15 minutes
+
+    # ── Cookie Settings ──────────────────────
+    COOKIE_DOMAIN: str | None = None
+    COOKIE_SECURE: bool = False  # True in production (HTTPS)
+    COOKIE_SAMESITE: str = "lax"
 
     # ── CORS ─────────────────────────────────
     CORS_ORIGINS: list[str] = [
