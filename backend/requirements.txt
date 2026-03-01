@@ -30,6 +30,9 @@ email-validator>=2.0.0
 # HTTP client (for external API calls)
 httpx>=0.28.0
 
+# Stripe payments
+stripe>=8.0.0
+
 # RSS feed parsing
 feedparser>=6.0.0
 
@@ -39,6 +42,9 @@ tiktoken>=0.8.0
 
 # Task queue
 celery[redis]>=5.4.0
+
+# Transactional email (Resend)
+resend>=2.0.0
 
 # Object storage (S3 / Cloudflare R2)
 aioboto3>=13.0.0

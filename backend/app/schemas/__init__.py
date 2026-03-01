@@ -124,6 +124,14 @@ from app.schemas.prediction import (
     PredictionGenerateResponse,
 )
 
+# Email
+from app.schemas.email import (
+    EmailPreferenceResponse,
+    EmailPreferenceUpdate,
+    EmailLogResponse,
+    EmailLogListResponse,
+)
+
 __all__ = [
     # Auth
     "RegisterRequest", "RegisterResponse", "LoginRequest",
@@ -165,4 +173,7 @@ __all__ = [
     "PredictionGenerateRequest", "PredictionUpdate", "PredictedQuestion",
     "PredictionResponse", "PredictionListResponse", "PredictionPublishResponse",
     "PredictionSSEEvent", "PredictionGenerateResponse",
+    # Email
+    "EmailPreferenceResponse", "EmailPreferenceUpdate",
+    "EmailLogResponse", "EmailLogListResponse",
 ]

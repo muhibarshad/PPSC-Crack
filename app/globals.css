@@ -447,6 +447,47 @@ h1, h2, h3, h4, h5, h6 {
   50%      { border-color: rgba(139, 92, 246, 0.25); }
 }
 
+/* ── Skeleton shimmer loading animation ── */
+@keyframes skeletonShimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(139, 92, 246, 0.04) 0%,
+    rgba(139, 92, 246, 0.10) 40%,
+    rgba(139, 92, 246, 0.04) 80%
+  );
+  background-size: 400px 100%;
+  animation: skeletonShimmer 1.8s ease-in-out infinite;
+}
+
+/* ── Correct answer green glow pulse (GSAP enhanced) ── */
+@keyframes correctGlowPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.4); }
+  50%  { box-shadow: 0 0 20px 4px rgba(52, 211, 153, 0.3); }
+  100% { box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.1); }
+}
+
+.correct-glow-pulse {
+  animation: correctGlowPulse 0.8s ease-in-out;
+}
+
+/* ── Wrong answer red horizontal shake (3 frames) ── */
+@keyframes wrongShake3 {
+  0%   { transform: translateX(0); }
+  25%  { transform: translateX(-8px); }
+  50%  { transform: translateX(8px); }
+  75%  { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+
+.wrong-shake {
+  animation: wrongShake3 0.4s ease-out;
+}
+
 .animate-fade-in-up { animation: fadeInUp var(--duration-slow) var(--ease-out) both; }
 .animate-fade-in    { animation: fadeIn var(--duration-slow) var(--ease-out) both; }
 .animate-float      { animation: float 6s ease-in-out infinite; }

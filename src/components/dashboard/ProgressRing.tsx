@@ -45,11 +45,11 @@ export default function ProgressRing({
 
     const target = circumference - (circumference * percent) / 100;
 
-    // Animate ring stroke
+    // Animate ring stroke — power2.inOut, 1.5s as specified
     gsap.to(circle, {
       strokeDashoffset: target,
-      duration: 1.8,
-      ease: 'power3.out',
+      duration: 1.5,
+      ease: 'power2.inOut',
       delay: 0.3,
     });
 
@@ -57,8 +57,8 @@ export default function ProgressRing({
     const obj = { val: 0 };
     gsap.to(obj, {
       val: percent,
-      duration: 1.8,
-      ease: 'power3.out',
+      duration: 1.5,
+      ease: 'power2.inOut',
       delay: 0.3,
       onUpdate: () => {
         num.textContent = `${Math.round(obj.val)}%`;

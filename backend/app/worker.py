@@ -29,6 +29,7 @@ celery_app = Celery(
         "app.tasks.note_processing",
         "app.tasks.prediction_engine_task",
         "app.tasks.current_affairs_pipeline",
+        "app.tasks.email_tasks",
     ],
 )
 
@@ -55,6 +56,7 @@ celery_app.conf.update(
         "app.tasks.note_processing.*": {"queue": "ai_pipeline"},
         "app.tasks.prediction_engine_task.*": {"queue": "ai_pipeline"},
         "app.tasks.current_affairs_pipeline.*": {"queue": "default"},
+        "app.tasks.email_tasks.*": {"queue": "default"},
     },
     # Default queue
     task_default_queue="default",
@@ -63,6 +65,16 @@ celery_app.conf.update(
         "daily-current-affairs-6am-pkt": {
             "task": "app.tasks.current_affairs_pipeline.run_daily_current_affairs",
             "schedule": crontab(hour=1, minute=0),  # 01:00 UTC = 06:00 PKT
+            "options": {"queue": "default"},
+        },
+        "weekly-digest-monday-8am-pkt": {
+            "task": "app.tasks.email_tasks.send_weekly_digest_task",
+            "schedule": crontab(hour=3, minute=0, day_of_week=1),  # 03:00 UTC Monday = 08:00 PKT
+            "options": {"queue": "default"},
+        },
+        "daily-subscription-expiry-check-9am-pkt": {
+            "task": "app.tasks.email_tasks.check_subscription_expiry_task",
+            "schedule": crontab(hour=4, minute=0),  # 04:00 UTC = 09:00 PKT
             "options": {"queue": "default"},
         },
     },

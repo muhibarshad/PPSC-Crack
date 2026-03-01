@@ -26,21 +26,36 @@ interface StatBoxProps {
 
 function StatBox({ icon, iconColor, iconBg, label, value, delay }: StatBoxProps) {
   const numRef = useRef<HTMLSpanElement>(null);
+  const hasAnimated = useRef(false);
 
   useEffect(() => {
     const el = numRef.current;
-    if (!el) return;
+    if (!el || hasAnimated.current) return;
 
-    const obj = { val: 0 };
-    gsap.to(obj, {
-      val: value,
-      duration: 1.4,
-      ease: 'power2.out',
-      delay,
-      onUpdate: () => {
-        el.textContent = String(Math.round(obj.val));
+    // IntersectionObserver triggers CountUp when stat card enters viewport
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !hasAnimated.current) {
+          hasAnimated.current = true;
+          observer.disconnect();
+
+          const obj = { val: 0 };
+          gsap.to(obj, {
+            val: value,
+            duration: 1.4,
+            ease: 'power2.out',
+            delay,
+            onUpdate: () => {
+              el.textContent = String(Math.round(obj.val));
+            },
+          });
+        }
       },
-    });
+      { threshold: 0.3 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
   }, [value, delay]);
 
   return (

@@ -50,7 +50,7 @@ export default function CTASection() {
           </p>
           
           <div className="cta-content-item flex flex-col sm:flex-row items-center justify-center gap-6">
-            <a href="#pricing" className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 bg-white text-black rounded-2xl font-bold text-lg overflow-hidden transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] w-full sm:w-auto">
+            <a href="/auth/register" className="group relative inline-flex items-center justify-center gap-3 px-10 py-5 bg-white text-black rounded-2xl font-bold text-lg overflow-hidden transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(255,255,255,0.4)] w-full sm:w-auto">
               <span className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-primary via-neon to-accent" />
               <Icon name="zap" size={20} className="text-primary-vivid animate-pulse" />
               Get Free Access

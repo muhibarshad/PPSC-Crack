@@ -291,6 +291,29 @@ async def publish_prediction(
         pred.published_at = datetime.now(timezone.utc)
         pred.status = "published"
         message = "Prediction published successfully"
+
+        # Trigger email notification to subscribers via Celery
+        try:
+            from app.tasks.email_tasks import notify_prediction_published
+            from app.crud import crud_job_type
+
+            job_type = await crud_job_type.get(db, id=pred.job_type_id)
+            job_type_name = job_type.name if job_type else "Unknown"
+
+            notify_prediction_published.delay(
+                prediction_id=str(pred.id),
+                job_type_id=str(pred.job_type_id),
+                job_type_name=job_type_name,
+                prediction_title=pred.title or f"Prediction {pred.prediction_date}",
+                prediction_date=str(pred.prediction_date),
+                total_questions=pred.total_questions or 100,
+            )
+        except Exception:
+            import logging
+            logging.getLogger(__name__).warning(
+                "Failed to queue prediction notification for %s", prediction_id, exc_info=True
+            )
+
     elif action == "unpublish":
         pred.is_published = False
         pred.published_at = None

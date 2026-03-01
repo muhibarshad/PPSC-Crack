@@ -1,5 +1,9 @@
 import './globals.css';
 import AuthProvider from '@/components/auth/AuthProvider';
+import ClientProviders from '@/components/ClientProviders';
+
+// Register GSAP plugins globally
+import '@/lib/gsap-init';
 
 export const metadata = {
   title: 'PPSC Crack — AI-Powered Exam Domination System',
@@ -18,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <div className="bg-atmosphere" />
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ClientProviders>{children}</ClientProviders>
+        </AuthProvider>
       </body>
     </html>
   );

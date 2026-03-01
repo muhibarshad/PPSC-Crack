@@ -61,6 +61,7 @@ export default function AuthCallbackPage() {
           auth_provider: u.auth_provider || 'email',
           is_premium: u.is_premium || false,
           subscription_tier: u.subscription_tier || 'free',
+          subscription_expires_at: u.subscription_expires_at || null,
           selected_job_types: u.selected_job_types || null,
         };
         router.replace(getRedirectPath(redirectUser));

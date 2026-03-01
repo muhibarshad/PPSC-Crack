@@ -11,7 +11,7 @@
 
 'use client';
 
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useCallback } from 'react';
 import gsap from 'gsap';
 import Icon from '@/components/Icon';
 
@@ -41,6 +41,23 @@ interface TopicNodeProps {
 export default function TopicNode({ topic, isLast, onClick }: TopicNodeProps) {
   const checkRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLButtonElement>(null);
+
+  /* ── Magnetic hover: card subtly follows cursor (offset = cursor / 20) ── */
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const x = (e.clientX - rect.left - rect.width / 2) / 20;
+    const y = (e.clientY - rect.top - rect.height / 2) / 20;
+    gsap.to(el, { x, y, duration: 0.3, ease: 'power2.out', overwrite: 'auto' });
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: 'elastic.out(1, 0.3)', overwrite: 'auto' });
+  }, []);
 
   /* ── Completed checkmark pop-in ── */
   useEffect(() => {
@@ -138,7 +155,10 @@ export default function TopicNode({ topic, isLast, onClick }: TopicNodeProps) {
 
       {/* ── Card ── */}
       <button
+        ref={cardRef}
         onClick={() => onClick(topic.topic_id)}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         className={`
           glow-card p-5 flex-1 mb-4 text-left cursor-pointer
           transition-all duration-300

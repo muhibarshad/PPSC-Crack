@@ -26,6 +26,7 @@ import StorySectionBlock from '@/components/dashboard/story/StorySectionBlock';
 import SectionQuizBlock from '@/components/dashboard/story/SectionQuizBlock';
 import BookmarkPanel from '@/components/dashboard/story/BookmarkPanel';
 import NoteEditor from '@/components/dashboard/story/NoteEditor';
+import { useConfetti } from '@/lib/animations';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -215,6 +216,8 @@ function StoryReaderContent() {
   const router = useRouter();
   const { session } = useAuthStore();
   const topicId = params.id as string;
+  const fireConfetti = useConfetti();
+  const confettiFiredRef = useRef(false);
 
   const [data, setData] = useState<StoryReaderData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -666,27 +669,54 @@ function StoryReaderContent() {
           );
         })}
 
-        {/* ── Completion badge ── */}
+        {/* ── Completion badge with confetti burst ── */}
         {readingProgress >= 0.95 && sectionsUnlocked >= sections.length && (
-          <div
-            className="glass text-center animate-fade-in-up"
-            style={{ padding: 'var(--space-8)', marginTop: 'var(--space-12)' }}
-          >
-            <div style={{ fontSize: '48px' }}>🎉</div>
-            <h2 className="font-display text-2xl font-bold gradient-text mt-4">Story Complete!</h2>
-            <p className="text-sm mt-2" style={{ color: 'var(--clr-text-secondary)' }}>
-              You&apos;ve finished reading <strong>{data.display_name}</strong>. Great work!
-            </p>
-            <button
-              className="btn btn-primary mt-6"
-              onClick={() => router.back()}
-            >
-              <Icon name="arrow-right" size={14} className="rotate-180" />
-              Back to Learning Path
-            </button>
-          </div>
+          <CompletionBadge
+            displayName={data.display_name}
+            onBack={() => router.back()}
+            fireConfetti={fireConfetti}
+            confettiFiredRef={confettiFiredRef}
+          />
         )}
       </div>
+    </div>
+  );
+}
+
+/* ── Completion badge — fires confetti on mount ── */
+function CompletionBadge({
+  displayName,
+  onBack,
+  fireConfetti,
+  confettiFiredRef,
+}: {
+  displayName: string;
+  onBack: () => void;
+  fireConfetti: () => void;
+  confettiFiredRef: React.MutableRefObject<boolean>;
+}) {
+  useEffect(() => {
+    if (!confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+      // Small delay to let the element render
+      setTimeout(fireConfetti, 300);
+    }
+  }, [fireConfetti, confettiFiredRef]);
+
+  return (
+    <div
+      className="glass text-center animate-fade-in-up"
+      style={{ padding: 'var(--space-8)', marginTop: 'var(--space-12)' }}
+    >
+      <div style={{ fontSize: '48px' }}>🎉</div>
+      <h2 className="font-display text-2xl font-bold gradient-text mt-4">Story Complete!</h2>
+      <p className="text-sm mt-2" style={{ color: 'var(--clr-text-secondary)' }}>
+        You&apos;ve finished reading <strong>{displayName}</strong>. Great work!
+      </p>
+      <button className="btn btn-primary mt-6" onClick={onBack}>
+        <Icon name="arrow-right" size={14} className="rotate-180" />
+        Back to Learning Path
+      </button>
     </div>
   );
 }

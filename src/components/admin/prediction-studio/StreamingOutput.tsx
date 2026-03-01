@@ -9,6 +9,7 @@
 'use client';
 
 import { useRef, useEffect } from 'react';
+import gsap from 'gsap';
 import QuestionCard from './QuestionCard';
 import type { ReviewableQuestion, QuestionStatus, StudioPhase } from './types';
 
@@ -37,6 +38,8 @@ export default function StreamingOutput({
   animatedUpTo,
 }: StreamingOutputProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const coreHeaderRef = useRef<HTMLDivElement>(null);
+  const caHeaderRef = useRef<HTMLDivElement>(null);
   const isReview = phase === 'review' || phase === 'published';
 
   // Auto-scroll to bottom during generation
@@ -45,6 +48,25 @@ export default function StreamingOutput({
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [questions.length, statusMessages.length, phase]);
+
+  // GSAP slide-in-from-left for section headers
+  useEffect(() => {
+    if (coreHeaderRef.current && mainQuestions.length > 0) {
+      gsap.fromTo(coreHeaderRef.current,
+        { opacity: 0, x: -30 },
+        { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' },
+      );
+    }
+  }, [mainQuestions.length > 0]);
+
+  useEffect(() => {
+    if (caHeaderRef.current && caQuestions.length > 0) {
+      gsap.fromTo(caHeaderRef.current,
+        { opacity: 0, x: -30 },
+        { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' },
+      );
+    }
+  }, [caQuestions.length > 0]);
 
   // Partition questions
   const mainQuestions = questions.filter((q) => !q.is_current_affairs);
@@ -118,7 +140,7 @@ export default function StreamingOutput({
         {/* Main Questions Section */}
         {mainQuestions.length > 0 && (
           <>
-            <div className="flex items-center gap-3 pt-2 animate-slide-in-left">
+            <div ref={coreHeaderRef} className="flex items-center gap-3 pt-2">
               <div className="h-px flex-1 bg-gradient-to-r from-[#a78bfa]/30 to-transparent" />
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#a78bfa]">
                 📚 Core Questions ({mainQuestions.length})
@@ -146,7 +168,7 @@ export default function StreamingOutput({
         {/* Current Affairs Section */}
         {caQuestions.length > 0 && (
           <>
-            <div className="flex items-center gap-3 pt-4 animate-slide-in-left">
+            <div ref={caHeaderRef} className="flex items-center gap-3 pt-4">
               <div className="h-px flex-1 bg-gradient-to-r from-[#38bdf8]/30 to-transparent" />
               <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#38bdf8]">
                 🌍 Current Affairs ({caQuestions.length})

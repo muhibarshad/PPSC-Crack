@@ -32,6 +32,9 @@ from app.api.v1.endpoints import (
     admin_current_affairs,
     admin_pattern_analytics,
     admin_dashboard,
+    payments,
+    email,
+    admin_email,
 )
 
 api_v1_router = APIRouter()
@@ -90,4 +93,13 @@ api_v1_router.include_router(
 )
 api_v1_router.include_router(
     admin_dashboard.router, prefix="/admin", tags=["Admin — Dashboard"]
+)
+api_v1_router.include_router(
+    payments.router, prefix="/payments", tags=["Payments"]
+)
+api_v1_router.include_router(
+    email.router, tags=["Email Preferences"]
+)
+api_v1_router.include_router(
+    admin_email.router, prefix="/admin", tags=["Admin — Email"]
 )

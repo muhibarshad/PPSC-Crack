@@ -23,6 +23,7 @@ export interface AppUser {
   auth_provider: string;
   is_premium: boolean;
   subscription_tier: string;
+  subscription_expires_at: string | null;
   selected_job_types: string[] | null;
 }
 
@@ -90,6 +91,7 @@ function mapUser(data: Record<string, unknown>): AppUser {
     auth_provider: (data.auth_provider as string) || 'email',
     is_premium: (data.is_premium as boolean) || false,
     subscription_tier: (data.subscription_tier as string) || 'free',
+    subscription_expires_at: (data.subscription_expires_at as string) || null,
     selected_job_types: (data.selected_job_types as string[] | null) || null,
   };
 }

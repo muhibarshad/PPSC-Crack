@@ -78,6 +78,24 @@ class Settings(BaseSettings):
     # ── Cost Tracking ────────────────────────
     OPENAI_COST_LOG_ENABLED: bool = True
 
+    # ── Stripe Payments ───────────────────────
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_PUBLISHABLE_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_BASIC_MONTHLY_PRICE_ID: str = ""
+    STRIPE_BASIC_ANNUAL_PRICE_ID: str = ""
+    STRIPE_PRO_MONTHLY_PRICE_ID: str = ""
+    STRIPE_PRO_ANNUAL_PRICE_ID: str = ""
+    FRONTEND_URL: str = "http://localhost:3000"
+
+    # ── JazzCash Payments ────────────────────
+    JAZZCASH_MERCHANT_ID: str = ""
+    JAZZCASH_PASSWORD: str = ""
+    JAZZCASH_INTEGRITY_SALT: str = ""
+    JAZZCASH_ENDPOINT: str = "https://sandbox.jazzcash.com.pk/ApplicationAPI/API/2.0/Purchase/DoMWalletTransaction"
+    JAZZCASH_CHECKOUT_URL: str = "https://sandbox.jazzcash.com.pk/CustomerPortal/transactionmanagement/merchantform"
+    JAZZCASH_RETURN_URL: str = "http://localhost:3000/dashboard/subscription"
+
     # ── Object Storage (S3 / Cloudflare R2) ──
     STORAGE_BACKEND: str = "s3"  # "s3" or "r2" or "local"
     AWS_ACCESS_KEY_ID: str = ""
@@ -91,6 +109,11 @@ class Settings(BaseSettings):
     OCR_CONFIDENCE_THRESHOLD: float = 0.85
     OCR_MAX_IMAGES: int = 4
     SCAN_MAX_FILE_SIZE_MB: int = 10
+
+    # ── Resend (Transactional Email) ─────────
+    RESEND_API_KEY: str = ""
+    RESEND_FROM_EMAIL: str = "PPSC Crack <noreply@ppsc-crack.pk>"
+    RESEND_REPLY_TO: str = "support@ppsc-crack.pk"
 
 
 settings = Settings()

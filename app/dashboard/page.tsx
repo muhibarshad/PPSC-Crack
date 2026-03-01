@@ -7,8 +7,9 @@
 
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import gsap from 'gsap';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useAuthStore, needsOnboarding } from '@/store/auth-store';
 import ProgressRing from '@/components/dashboard/ProgressRing';
@@ -17,6 +18,7 @@ import TodaysFocusCard from '@/components/dashboard/TodaysFocusCard';
 import LatestPredictionCard from '@/components/dashboard/LatestPredictionCard';
 import NextStoryCard from '@/components/dashboard/NextStoryCard';
 import QuickStatsBar from '@/components/dashboard/QuickStatsBar';
+import PageTransition from '@/components/PageTransition';
 import Icon from '@/components/Icon';
 
 /* ── Types matching backend DashboardHomeResponse ── */
@@ -175,10 +177,61 @@ function DashboardContent() {
   if (!data) return null;
 
   return (
-    <div className="min-h-screen z-10 relative pt-24 pb-16 px-6">
+    <PageTransition>
+    <DashboardAnimatedContent data={data} timeGreeting={timeGreeting} logout={logout} router={router} />
+    </PageTransition>
+  );
+}
+
+/**
+ * Inner dashboard content with GSAP stagger animations on mount.
+ * Stat cards fade+slide up with 0.1s stagger delay.
+ */
+function DashboardAnimatedContent({
+  data,
+  timeGreeting,
+  logout,
+  router,
+}: {
+  data: DashboardData;
+  timeGreeting: string;
+  logout: () => void;
+  router: ReturnType<typeof useRouter>;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  /* ── GSAP stagger on mount: stat cards fade+slide up ── */
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const cards = container.querySelectorAll('.stagger-card');
+    if (cards.length === 0) return;
+
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        cards,
+        { opacity: 0, y: 30, scale: 0.97 },
+        {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          duration: 0.6,
+          stagger: 0.1,
+          ease: 'power3.out',
+          delay: 0.15,
+        },
+      );
+    }, container);
+
+    return () => ctx.revert();
+  }, []);
+
+  return (
+    <div ref={containerRef} className="min-h-screen z-10 relative pt-24 pb-16 px-6">
       <div className="max-w-5xl mx-auto flex flex-col gap-8">
         {/* ═══ Header ═══ */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 animate-fade-in-up">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 stagger-card">
           <div>
             <h1 className="font-display text-3xl md:text-4xl font-bold text-white">
               {timeGreeting}, <span className="gradient-text">{data.greeting_name}</span>! 👋
@@ -204,7 +257,7 @@ function DashboardContent() {
         </div>
 
         {/* ═══ Hero Section: Progress Ring + Streak ═══ */}
-        <section className="glass p-8 animate-fade-in-up delay-100">
+        <section className="glass p-8 stagger-card">
           <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
             {/* Progress Ring */}
             <ProgressRing
@@ -247,7 +300,7 @@ function DashboardContent() {
         </section>
 
         {/* ═══ Action Cards ═══ */}
-        <section className="flex flex-wrap gap-6 animate-fade-in-up delay-200">
+        <section className="flex flex-wrap gap-6 stagger-card">
           {/* Today's Focus */}
           {data.todays_focus && (
             <TodaysFocusCard
@@ -295,7 +348,7 @@ function DashboardContent() {
               <p className="text-sm text-[var(--clr-text-secondary)] mt-auto">
                 Get AI-predicted papers based on past PPSC patterns.
               </p>
-              <button className="btn btn-gold btn-sm w-full mt-1">
+              <button onClick={() => router.push('/dashboard/subscription')} className="btn btn-gold btn-sm w-full mt-1">
                 <Icon name="star" size={14} />
                 Upgrade to Premium
               </button>
@@ -359,7 +412,7 @@ function DashboardContent() {
         </section>
 
         {/* ═══ Quick Stats Bar ═══ */}
-        <section className="animate-fade-in-up delay-300">
+        <section className="stagger-card">
           <QuickStatsBar
             topicsCompleted={data.quick_stats.topics_completed}
             questionsPracticed={data.quick_stats.questions_practiced}
@@ -372,6 +425,7 @@ function DashboardContent() {
 }
 
 /* ── Page Wrapper ── */
+
 
 export default function DashboardPage() {
   return (

@@ -54,6 +54,16 @@ class User(Base):
         DateTime(timezone=True), nullable=True
     )
 
+    # ── Stripe ───────────────────────────────────────────────
+    stripe_customer_id: Mapped[str | None] = mapped_column(
+        String(255), unique=True, nullable=True, index=True,
+        comment="Stripe Customer ID — created on first checkout",
+    )
+    stripe_subscription_id: Mapped[str | None] = mapped_column(
+        String(255), unique=True, nullable=True,
+        comment="Active Stripe Subscription ID",
+    )
+
     # ── Preferences ──────────────────────────────────────────
     selected_job_types: Mapped[list | None] = mapped_column(
         ARRAY(UUID(as_uuid=True)), nullable=True

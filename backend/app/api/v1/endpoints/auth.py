@@ -149,6 +149,16 @@ async def register(
     await db.commit()
     await db.refresh(user)
 
+    # 4 — Send welcome email (non-blocking)
+    try:
+        from app.services.email import get_email_service
+        email_svc = get_email_service()
+        await email_svc.ensure_preferences_exist(db, user.id)
+        await email_svc.send_welcome(db, user)
+        await db.commit()
+    except Exception:
+        logger.warning("Failed to send welcome email to %s", user.email, exc_info=True)
+
     return RegisterResponse(
         id=user.id,
         email=user.email,
@@ -453,15 +463,29 @@ async def update_me(
 @router.post("/forgot-password", response_model=ForgotPasswordResponse)
 async def forgot_password(
     body: ForgotPasswordRequest,
+    db: DBSession,
     _rate: None = Depends(auth_rate_limit),
 ):
-    """Send a password-reset email via Supabase."""
+    """Send a password-reset email via Supabase + Resend."""
     sb = get_supabase()
     try:
         sb.auth.reset_password_email(body.email)
     except AuthApiError as exc:
         logger.warning("Password reset error for %s: %s", body.email, exc.message)
         # Don't reveal whether the email exists
+
+    # Also send our custom branded password reset email
+    try:
+        from app.services.email import get_email_service
+        user = await crud_user.get_by_email(db, email=body.email)
+        if user:
+            email_svc = get_email_service()
+            reset_url = f"{settings.FRONTEND_URL}/auth/reset-password?email={body.email}"
+            await email_svc.send_password_reset(db, user, reset_url=reset_url)
+            await db.commit()
+    except Exception:
+        logger.warning("Failed to send branded reset email to %s", body.email, exc_info=True)
+
     return ForgotPasswordResponse()
 
 

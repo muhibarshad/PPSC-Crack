@@ -3,8 +3,11 @@
 import { useRef } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
+import dynamic from 'next/dynamic';
 import Icon from '@/components/Icon';
 import { HERO_STATS } from '@/data/mock-data';
+
+const ParticlesBackground = dynamic(() => import('@/components/ParticlesBackground'), { ssr: false });
 
 export default function HeroSection() {
   const container = useRef<HTMLElement>(null);
@@ -50,6 +53,9 @@ export default function HeroSection() {
 
   return (
     <section ref={container} className="hero min-h-screen relative flex items-center justify-center pt-32 pb-20 overflow-hidden z-10">
+      {/* Dense particle field for hero */}
+      <ParticlesBackground density="dense" className="z-0" />
+
       <div className="hero-orb absolute w-[600px] h-[600px] rounded-full top-[10%] -left-[10%] bg-primary/10 blur-[100px] -z-10" />
       <div className="hero-orb absolute w-[450px] h-[450px] rounded-full bottom-[5%] -right-[10%] bg-neon/5 blur-[100px] -z-10" />
 
@@ -72,7 +78,7 @@ export default function HeroSection() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-5 mb-24">
-            <a href="#pricing" className="hero-btn group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-semibold text-lg overflow-hidden transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(139,92,246,0.6)]">
+            <a href="/auth/register" className="hero-btn group relative inline-flex items-center justify-center gap-3 px-8 py-4 bg-primary text-white rounded-2xl font-semibold text-lg overflow-hidden transition-transform hover:scale-105 hover:shadow-[0_0_40px_rgba(139,92,246,0.6)]">
               <span className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
               <Icon name="zap" size={20} />
               Begin Your Journey

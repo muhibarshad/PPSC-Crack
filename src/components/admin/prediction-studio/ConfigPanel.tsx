@@ -49,9 +49,9 @@ export default function ConfigPanel({
         });
         if (res.ok) {
           const data = await res.json();
-          const items = data.items || data;
-          setJobTypes(items.filter((j: JobType) => j.is_active));
-          if (items.length > 0 && !jobTypeId) setJobTypeId(items[0].id);
+          const items = data.job_types || data.items || data;
+          setJobTypes(Array.isArray(items) ? items.filter((j: JobType) => j.is_active) : []);
+          if (Array.isArray(items) && items.length > 0 && !jobTypeId) setJobTypeId(items[0].id);
         }
       } catch { /* ignore */ }
       finally { setLoadingJT(false); }
@@ -99,6 +99,10 @@ export default function ConfigPanel({
           </label>
           {loadingJT ? (
             <div className="h-10 rounded-xl bg-white/[0.04] animate-pulse" />
+          ) : jobTypes.length === 0 ? (
+            <div className="text-xs text-[var(--clr-text-muted)] bg-[var(--clr-bg-elevated)] rounded-xl px-3 py-3 border border-[var(--clr-glass-border)]">
+              No job types found. Please run the seed script or add job types in the admin panel.
+            </div>
           ) : (
             <select
               value={jobTypeId}
