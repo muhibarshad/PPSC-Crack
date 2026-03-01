@@ -51,3 +51,12 @@ aioboto3>=13.0.0
 
 # File handling
 aiofiles>=24.1.0
+
+# Security — XSS prevention
+bleach>=6.0.0
+
+# Monitoring — Sentry error tracking
+sentry-sdk[fastapi]>=2.0.0
+
+# Load testing
+locust>=2.0.0

@@ -9,6 +9,7 @@ import logging
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
+import sentry_sdk
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -17,9 +18,15 @@ from sqlalchemy import text
 from app.config import settings
 from app.api.v1.router import api_v1_router
 from app.core.supabase_client import init_supabase
+from app.core.sentry_setup import init_sentry
+from app.core.global_rate_limiter import GlobalRateLimitMiddleware
+from app.core.csrf import CSRFMiddleware
 from app.database import engine, Base, redis_pool
 
 logger = logging.getLogger(__name__)
+
+# ── Initialize Sentry BEFORE app creation ───────────────────
+init_sentry()
 
 
 # ── Lifespan ────────────────────────────────────────────────
@@ -64,11 +71,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ── Global Rate Limiter (Redis-backed) ──────────────────────
+# 100 req/min for authenticated, 20 req/min for unauthenticated
+app.add_middleware(GlobalRateLimitMiddleware)
+
+# ── CSRF Protection ────────────────────────────────────────
+# Double-submit cookie pattern on all state-changing requests
+app.add_middleware(CSRFMiddleware)
+
 # ── Global Exception Handler ────────────────────────────────
 @app.exception_handler(Exception)
 async def _unhandled_exception_handler(request: Request, exc: Exception):
     """Catch-all so the frontend always receives JSON, never a bare 500."""
     logger.exception("Unhandled error on %s %s", request.method, request.url.path)
+    # Report to Sentry
+    sentry_sdk.capture_exception(exc)
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error. Please try again later."},

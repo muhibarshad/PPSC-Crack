@@ -6,9 +6,13 @@
 
 'use client';
 
+import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import dynamic from 'next/dynamic';
+import { initPostHog } from '@/lib/posthog';
+import { SWRConfig } from 'swr';
+import { fetcher } from '@/lib/swr';
 
 // Dynamically import ParticlesBackground to avoid SSR issues
 const ParticlesBackground = dynamic(
@@ -24,8 +28,21 @@ export default function ClientProviders({ children }: ClientProvidersProps) {
   const pathname = usePathname();
   const isLanding = pathname === '/';
 
+  // Initialize PostHog analytics on mount
+  useEffect(() => {
+    initPostHog();
+  }, []);
+
   return (
-    <>
+    <SWRConfig
+      value={{
+        fetcher,
+        dedupingInterval: 5 * 60 * 1000, // 5 min stale time for static data
+        revalidateOnFocus: false,
+        shouldRetryOnError: true,
+        errorRetryCount: 3,
+      }}
+    >
       {/* Global particle background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <ParticlesBackground density={isLanding ? 'dense' : 'normal'} />
@@ -43,6 +60,6 @@ export default function ClientProviders({ children }: ClientProvidersProps) {
           {children}
         </motion.div>
       </AnimatePresence>
-    </>
+    </SWRConfig>
   );
 }

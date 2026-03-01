@@ -19,6 +19,7 @@ import LatestPredictionCard from '@/components/dashboard/LatestPredictionCard';
 import NextStoryCard from '@/components/dashboard/NextStoryCard';
 import QuickStatsBar from '@/components/dashboard/QuickStatsBar';
 import PageTransition from '@/components/PageTransition';
+import { DashboardSkeleton } from '@/components/SkeletonLoader';
 import Icon from '@/components/Icon';
 
 /* ── Types matching backend DashboardHomeResponse ── */
@@ -146,9 +147,8 @@ function DashboardContent() {
   if (loading) {
     return (
       <div className="min-h-screen z-10 relative pt-24 px-6">
-        <div className="max-w-5xl mx-auto flex flex-col items-center justify-center gap-6 py-32">
-          <div className="w-16 h-16 rounded-full border-4 border-[var(--clr-primary-dim)] border-t-[var(--clr-primary)] animate-spin" />
-          <p className="text-[var(--clr-text-secondary)] text-sm">Loading your dashboard…</p>
+        <div className="max-w-5xl mx-auto">
+          <DashboardSkeleton />
         </div>
       </div>
     );

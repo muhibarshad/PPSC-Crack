@@ -18,6 +18,8 @@ interface PageTransitionProps {
   className?: string;
 }
 
+const easeInOut: [number, number, number, number] = [0.42, 0, 0.58, 1];
+
 const variants = {
   initial: {
     opacity: 0,
@@ -28,7 +30,7 @@ const variants = {
     y: 0,
     transition: {
       duration: 0.25,
-      ease: [0.42, 0, 0.58, 1], // ease-in-out
+      ease: easeInOut,
     },
   },
   exit: {
@@ -36,7 +38,7 @@ const variants = {
     y: -10,
     transition: {
       duration: 0.25,
-      ease: [0.42, 0, 0.58, 1],
+      ease: easeInOut,
     },
   },
 };

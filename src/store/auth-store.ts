@@ -10,6 +10,7 @@
 
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import { getCSRFToken } from '@/lib/csrf';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
 /* ── Types ─────────────────────────────────────── */
@@ -66,8 +67,16 @@ async function api<T = unknown>(
 ): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  // Include CSRF token on state-changing requests
+  const method = body ? 'POST' : 'GET';
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrf = getCSRFToken();
+    if (csrf) headers['X-CSRF-Token'] = csrf;
+  }
+
   const res = await fetch(`${API}${path}`, {
-    method: body ? 'POST' : 'GET',
+    method,
     headers,
     credentials: 'include', // send httpOnly cookies
     body: body ? JSON.stringify(body) : undefined,

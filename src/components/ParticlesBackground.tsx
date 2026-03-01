@@ -10,10 +10,10 @@
 
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import Particles from '@tsparticles/react';
+import { useEffect, useMemo, useState } from 'react';
+import Particles, { initParticlesEngine } from '@tsparticles/react';
 import { loadSlim } from '@tsparticles/slim';
-import type { Engine, ISourceOptions } from '@tsparticles/engine';
+import type { ISourceOptions } from '@tsparticles/engine';
 
 interface ParticlesBackgroundProps {
   density?: 'normal' | 'dense';
@@ -38,9 +38,10 @@ export default function ParticlesBackground({
   }, []);
 
   // Initialise slim engine once
-  const particlesInit = useCallback(async (engine: Engine) => {
-    await loadSlim(engine);
-    setReady(true);
+  useEffect(() => {
+    initParticlesEngine(async (engine) => {
+      await loadSlim(engine);
+    }).then(() => setReady(true));
   }, []);
 
   const particleCount = density === 'dense' ? 100 : 60;
@@ -135,7 +136,6 @@ export default function ParticlesBackground({
       <Particles
         id={`tsparticles-${density}`}
         options={options}
-        init={particlesInit}
         style={{
           position: 'absolute',
           inset: 0,

@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import gsap from 'gsap';
 import Icon from '@/components/Icon';
 
 /* ── Types matching PracticeGenerateResponse ── */
@@ -56,6 +57,7 @@ export default function PracticeTest({
 
   const startTime = useRef(Date.now());
   const feedbackTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const optionRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const currentQuestion = questions[currentIdx];
   const progress = ((currentIdx) / questions.length) * 100;
@@ -100,6 +102,45 @@ export default function PracticeTest({
     };
   }, []);
 
+  /* ── GSAP answer feedback animations ── */
+  const gsapFlashCorrect = useCallback((el: HTMLElement) => {
+    const tl = gsap.timeline();
+    tl.to(el, {
+      boxShadow: '0 0 0 4px rgba(52, 211, 153, 0.4), 0 0 30px rgba(52, 211, 153, 0.25)',
+      borderColor: 'rgba(52, 211, 153, 0.6)',
+      backgroundColor: 'rgba(52, 211, 153, 0.08)',
+      duration: 0.3,
+      ease: 'power2.out',
+    })
+      .to(el, {
+        boxShadow: '0 0 0 2px rgba(52, 211, 153, 0.2), 0 0 15px rgba(52, 211, 153, 0.1)',
+        duration: 0.4,
+        ease: 'power2.inOut',
+        yoyo: true,
+        repeat: 1,
+      })
+      .to(el, {
+        boxShadow: 'none',
+        borderColor: '',
+        backgroundColor: '',
+        duration: 0.3,
+        ease: 'power2.out',
+      });
+  }, []);
+
+  const gsapShakeWrong = useCallback((el: HTMLElement) => {
+    const tl = gsap.timeline();
+    tl.to(el, {
+      borderColor: 'rgba(248, 113, 113, 0.5)',
+      backgroundColor: 'rgba(248, 113, 113, 0.08)',
+      duration: 0.1,
+    })
+      .to(el, { x: -8, duration: 0.08 })
+      .to(el, { x: 8, duration: 0.08 })
+      .to(el, { x: -5, duration: 0.08 })
+      .to(el, { x: 0, borderColor: '', backgroundColor: '', duration: 0.3, ease: 'power2.out' });
+  }, []);
+
   /* ── Handle answer selection ── */
   const handleAnswer = useCallback(
     (option: string) => {
@@ -111,6 +152,10 @@ export default function PracticeTest({
       // a neutral "selected" flash, then advance.  Real scoring happens on submit.
       // But to keep the fun UX, we'll show "answered" feedback briefly.
       setFeedbackState('correct'); // neutral positive feedback for answering
+
+      // Trigger GSAP flash on the selected option button
+      const optionEl = optionRefs.current.get(option);
+      if (optionEl) gsapFlashCorrect(optionEl);
 
       const newAnswers = [...answers, { question_id: currentQuestion.id, selected_answer: option }];
       setAnswers(newAnswers);
@@ -127,7 +172,7 @@ export default function PracticeTest({
         }
       }, 600);
     },
-    [feedbackState, answers, currentQuestion, isLast, onFinish],
+    [feedbackState, answers, currentQuestion, isLast, onFinish, gsapFlashCorrect],
   );
 
   /* ── Option text getter ── */
@@ -240,6 +285,7 @@ export default function PracticeTest({
           return (
             <button
               key={key}
+              ref={(el) => { if (el) optionRefs.current.set(key, el); }}
               onClick={() => handleAnswer(key)}
               disabled={isAnswered}
               className={`${cardClass} glow-card p-5 flex items-start gap-4 text-left transition-all duration-200

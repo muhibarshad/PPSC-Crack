@@ -59,6 +59,13 @@ class Settings(BaseSettings):
         "http://127.0.0.1:3000",
     ]
 
+    # ── Sentry (Error Monitoring) ────────────
+    SENTRY_DSN: str = ""
+
+    # ── Global Rate Limiting ─────────────────
+    RATE_LIMIT_AUTHENTICATED: int = 100  # req/min for auth'd users
+    RATE_LIMIT_UNAUTHENTICATED: int = 20  # req/min for unauth'd
+
     # ── External APIs ────────────────────────
     OPENAI_API_KEY: str = ""
     OPENAI_ORG_ID: str | None = None

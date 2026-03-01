@@ -14,6 +14,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import gsap from 'gsap';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { useAuthStore } from '@/store/auth-store';
 import Icon from '@/components/Icon';
@@ -169,11 +171,39 @@ function InlineMCQ({
 }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const optionRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   const handleSelect = (key: string) => {
     if (revealed) return;
     setSelected(key);
     setRevealed(true);
+
+    // GSAP feedback on correct answer element
+    const correctEl = optionRefs.current.get(correctAnswer);
+    if (correctEl) {
+      gsap.fromTo(correctEl,
+        { boxShadow: 'none' },
+        {
+          boxShadow: '0 0 0 3px rgba(52, 211, 153, 0.4), 0 0 20px rgba(52, 211, 153, 0.2)',
+          duration: 0.4,
+          ease: 'power2.out',
+          yoyo: true,
+          repeat: 1,
+        },
+      );
+    }
+
+    // GSAP shake on wrong selection
+    if (key !== correctAnswer) {
+      const wrongEl = optionRefs.current.get(key);
+      if (wrongEl) {
+        gsap.timeline()
+          .to(wrongEl, { x: -6, duration: 0.08 })
+          .to(wrongEl, { x: 6, duration: 0.08 })
+          .to(wrongEl, { x: -4, duration: 0.08 })
+          .to(wrongEl, { x: 0, duration: 0.2, ease: 'power2.out' });
+      }
+    }
   };
 
   return (
@@ -201,6 +231,7 @@ function InlineMCQ({
           return (
             <button
               key={key}
+              ref={(el) => { if (el) optionRefs.current.set(key, el); }}
               onClick={() => handleSelect(key)}
               disabled={revealed}
               className={`flex items-center gap-3 p-2.5 rounded-lg border text-left text-xs transition-all ${stateClass} ${
@@ -272,7 +303,6 @@ function CACard({
   markingId: string | null;
 }) {
   const displayCategory = CATEGORY_DISPLAY[item.category] || item.category;
-  const delayClass = `ca-delay-${Math.min(index % 10, 9)}`;
   const isMarking = markingId === item.id;
 
   // Two-sentence summary: first 2 sentences of content if summary missing
@@ -283,8 +313,16 @@ function CACard({
   }, [item.summary, item.content]);
 
   return (
-    <div
-      className={`ca-card-enter ${delayClass} ${item.is_learned ? 'ca-card-learned' : ''}`}
+    <motion.div
+      className={`${item.is_learned ? 'ca-card-learned' : ''}`}
+      initial={{ opacity: 0, x: 40 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{
+        type: 'spring',
+        damping: 25,
+        stiffness: 250,
+        delay: index * 0.06,
+      }}
     >
       <div className="glass p-5 sm:p-6 hover:border-[var(--clr-glass-border-hover)] transition-all">
         {/* Top badges */}
@@ -382,7 +420,7 @@ function CACard({
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 

@@ -1,9 +1,11 @@
 /**
  * Admin Layout — Shared sidebar + content wrapper for admin pages.
+ * Mobile: sidebar collapses to hamburger menu overlay.
  */
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
@@ -21,13 +23,48 @@ const NAV_ITEMS = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuthStore();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Close sidebar on route change
+  useEffect(() => { setSidebarOpen(false); }, [pathname]);
+
+  // Close on escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSidebarOpen(false); };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
 
   return (
     <div className="min-h-screen flex z-10 relative">
-      {/* Sidebar */}
-      <aside className="w-64 shrink-0 border-r border-white/[0.06] bg-[var(--clr-bg-surface)] flex flex-col">
-        {/* Brand */}
-        <div className="px-6 py-6 border-b border-white/[0.06]">
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="lg:hidden fixed top-4 left-4 z-50 w-10 h-10 rounded-xl bg-[var(--clr-bg-surface)] border border-white/[0.06] flex items-center justify-center text-white hover:bg-white/[0.08] transition-colors"
+        aria-label="Open menu"
+      >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 12h18M3 6h18M3 18h18" />
+        </svg>
+      </button>
+
+      {/* Mobile overlay backdrop */}
+      {sidebarOpen && (
+        <div
+          className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar — hidden on mobile, slides in as overlay when open */}
+      <aside className={`
+        fixed lg:static inset-y-0 left-0 z-50
+        w-64 shrink-0 border-r border-white/[0.06] bg-[var(--clr-bg-surface)] flex flex-col
+        transition-transform duration-300 ease-out
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+      `}>
+        {/* Brand + close button on mobile */}
+        <div className="px-6 py-6 border-b border-white/[0.06] flex items-center justify-between">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-primary-vivid to-neon flex items-center justify-center font-black text-lg text-white shadow-[0_0_16px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform duration-300">
               P
@@ -36,13 +73,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               PPSC <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-neon">Crack</span>
             </span>
           </Link>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[var(--clr-text-muted)] mt-2 font-semibold">
-            Admin Panel
-          </p>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden w-8 h-8 rounded-lg flex items-center justify-center text-[var(--clr-text-muted)] hover:text-white hover:bg-white/[0.06] transition-colors"
+            aria-label="Close menu"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
+          </button>
         </div>
+        <p className="px-6 pt-2 text-[10px] uppercase tracking-[0.2em] text-[var(--clr-text-muted)] font-semibold">
+          Admin Panel
+        </p>
 
         {/* Nav Items */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const active = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
             return (
@@ -93,8 +137,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-y-auto p-8">
+      {/* Main content — add left padding on mobile for hamburger */}
+      <main className="flex-1 overflow-y-auto p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8">
         {children}
       </main>
     </div>

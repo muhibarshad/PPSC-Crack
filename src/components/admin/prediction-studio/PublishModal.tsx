@@ -7,6 +7,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import AnimatedModal from '@/components/AnimatedModal';
 
 interface PublishModalProps {
   isOpen: boolean;
@@ -37,15 +38,8 @@ export default function PublishModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="glass relative z-10 w-full max-w-md mx-4 p-0 overflow-hidden animate-scale-in">
+    <AnimatedModal isOpen={isOpen} onClose={onClose}>
+      <div className="glass relative w-full max-w-md mx-4 p-0 overflow-hidden">
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
           <div className="flex items-center gap-3 mb-4">
@@ -116,6 +110,6 @@ export default function PublishModal({
           </button>
         </div>
       </div>
-    </div>
+    </AnimatedModal>
   );
 }

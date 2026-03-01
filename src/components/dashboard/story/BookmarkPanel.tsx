@@ -5,6 +5,7 @@
 
 'use client';
 
+import { motion, AnimatePresence } from 'framer-motion';
 import Icon from '@/components/Icon';
 
 interface BookmarkData {
@@ -49,8 +50,12 @@ export default function BookmarkPanel({
   return (
     <>
       {/* Overlay backdrop */}
-      <div
+      <motion.div
         onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
         style={{
           position: 'fixed',
           inset: 0,
@@ -61,8 +66,11 @@ export default function BookmarkPanel({
       />
 
       {/* Panel */}
-      <div
-        className="animate-fade-in"
+      <motion.div
+        initial={{ x: '100%' }}
+        animate={{ x: 0 }}
+        exit={{ x: '100%' }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
         style={{
           position: 'fixed',
           top: 0,
@@ -146,7 +154,7 @@ export default function BookmarkPanel({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </>
   );
 }

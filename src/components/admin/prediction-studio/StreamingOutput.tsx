@@ -42,6 +42,10 @@ export default function StreamingOutput({
   const caHeaderRef = useRef<HTMLDivElement>(null);
   const isReview = phase === 'review' || phase === 'published';
 
+  // Partition questions (must be before hooks that reference them)
+  const mainQuestions = questions.filter((q) => !q.is_current_affairs);
+  const caQuestions = questions.filter((q) => q.is_current_affairs);
+
   // Auto-scroll to bottom during generation
   useEffect(() => {
     if (phase === 'generating' && scrollRef.current) {
@@ -67,10 +71,6 @@ export default function StreamingOutput({
       );
     }
   }, [caQuestions.length > 0]);
-
-  // Partition questions
-  const mainQuestions = questions.filter((q) => !q.is_current_affairs);
-  const caQuestions = questions.filter((q) => q.is_current_affairs);
 
   const acceptedCount = questions.filter((q) => q.status === 'accepted').length;
   const rejectedCount = questions.filter((q) => q.status === 'rejected').length;
